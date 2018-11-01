@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <errno.h>
-#include <string.h>
+#include <string.h> 
+
 
 #include "options.h"
 
@@ -41,7 +44,25 @@ int main(int argc, char* argv[])
     
     // cpm_options.infile
     // cpm_options.outfile
-    
+    int buf_size = 20;
+ 	char buf[buf_size]; 
+ 	int infile_des = open(argv[argc-2],O_RDONLY); 
+ 	int outfile_des = open(argv[argc-1],O_WRONLY);
+	int r = read(infile_des,&buf, buf_size);
+	int w = write(outfile_des,&buf,r);
+	close(infile_des); 
+	close(outfile_des);
+	printf("R: %d, W: %d\n",r,w);
+	if(infile_des == -1){
+		int errsv = errno;
+ 		printf("SUBOR NEEXISTUJE \n");
+		return 21;
+	};
+	if(errno !=0){
+		printf("INA CHYBA \n");
+		return 21;
+	};
+
     //-------------------------------------------------------------------
     // Vypis adresara
     //-------------------------------------------------------------------
