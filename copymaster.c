@@ -4,6 +4,10 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h> 
+#include <sys/types.h> 
+#include <sys/stat.h> 
+#include <getopt.h>
+#include <ctype.h>
 
 
 #include "options.h"
@@ -44,10 +48,14 @@ int main(int argc, char* argv[])
     
     // cpm_options.infile
     // cpm_options.outfile
+	int sz=lseek(fd,0L,SEEK_END);
+    char pole[sz];
+	int fd2=(cpm_options.outfile,O_WRONLY|O_TRUNC|O_APPEND|O_CREAT,0666);
+	 int fd = open (cpm_options.infile, O_RDONLY);
     int buf_size = 20;
  	char buf[buf_size]; 
- 	int infile_des = open(cpm_options.infile,O_RDONLY); 
- 	int outfile_des = open(cpm_options.outfile,O_WRONLY);
+ 	int infile_des = open(cpm_options->infile,O_RDONLY); 
+ 	int outfile_des = open(cpm_options->outfile,O_WRONLY);
 	int r = read(infile_des,&buf, buf_size);
 	int w = write(outfile_des,&buf,r);
 	close(infile_des); 
@@ -62,6 +70,73 @@ int main(int argc, char* argv[])
 		printf("INA CHYBA \n");
 		return 21;
 	};
+	
+	if(cpm_options.append){
+		 fd2= open (cpm_options.outfile,O_WRONLY);
+                   lseek(fd2,0L,SEEK_END);
+                   write(fd2,&pole,counter);
+                   break;
+
+	}
+	
+	if(cpm_options.overwrite){
+		fd2= open (filename2,O_WRONLY|O_TRUNC);
+                   lseek(fd2,0L,SEEK_SET);
+                   write(fd2,&pole,counter);
+                   break;
+
+	}
+	
+	if(cpm_options.fast){
+			lseek(fd,0L,SEEK_SET);
+                   read(fd,&pole,sz);
+                   write(fd2,&pole,sz);
+                   break;
+
+	}
+	if(cpm_options.inode){
+		struct stat     buf; 
+
+   long int inode;
+   scanf("%ld",&inode);
+   
+
+   stat(cpm_options.infile,&buf);
+
+   printf("I-node number of file %s is: %ld ",argv[1],buf.st_ino);
+   printf("Entered inode : %ld\n", inode );
+
+   if(inode==buf.st_ino){
+      fd=open(cpm_options.infile,O_RDONLY);
+      fd2=open(cpm_options.outfile,O_WRONLY);
+
+      int sz=lseek(fd,0L,SEEK_END);
+      char buffer[sz];
+      read(fd,&buffer,sz);
+      write(fd2,&buffer,sz);
+   }
+
+     close(fd);
+     close(fd2);
+
+	}
+	
+	if(cpm_options.slow){
+			char znak[1];
+                                    
+   fd = open (cpm_options.infile, O_RDONLY);
+
+   fd2 = open (cpm_options.outfile, O_WRONLY); 
+
+   while(fd!=EOF){
+   	fscanf(fd,"%c",znak);
+   	fprintf(fd2,"%c",znak);
+   }       
+   
+   close(fd);   
+   close(fd2);     
+
+	}
 
     //-------------------------------------------------------------------
     // Vypis adresara
