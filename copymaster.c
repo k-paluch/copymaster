@@ -46,8 +46,8 @@ int main(int argc, char* argv[])
     // cpm_options.outfile
     int buf_size = 20;
  	char buf[buf_size]; 
- 	int infile_des = open(argv[argc-2],O_RDONLY); 
- 	int outfile_des = open(argv[argc-1],O_WRONLY);
+ 	int infile_des = open(cpm_options.infile,O_RDONLY); 
+ 	int outfile_des = open(cpm_options.outfile,O_WRONLY);
 	int r = read(infile_des,&buf, buf_size);
 	int w = write(outfile_des,&buf,r);
 	close(infile_des); 
