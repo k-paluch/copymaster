@@ -15,7 +15,7 @@
 #include <time.h>
 
 #include "options.h"
-#include "helpF.c"
+#include "helpF.c" 
 
 #define OPTIONS_AMOUNT 14;
 
@@ -34,7 +34,21 @@ int banned_for_link[]       = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13};
 int banned_for_truncate[]   = {6, 7};
 int banned_for_sparse[]     = {5, 6, 11};
 
+void init_legal_options(int options_amount, int legal_options[]);
+void parse_given_options(struct CopymasterOptions cpm_options, int give_options[]);
+void ban_one_option(int number, int legal_options[]);
+void ban_options(int options_amount, int given_options[], int legal_options[]);
+void check_options(int options_amount, int given_options[], int legal_options[]);
 
+void open_infile(int *file, struct CopymasterOptions cpm_options, char flag);
+void open_outfile(int *file, struct CopymasterOptions cpm_options, char flag);
+
+void fast_copy(struct CopymasterOptions cpm_options, char flag);
+void slow_copy(struct CopymasterOptions cpm_options);
+
+int is_regular_file(const char *path);
+
+void FatalError(char c, const char* msg, int exit_status);
 
 int main(int argc, char* argv[])
 {
@@ -314,4 +328,3 @@ int main(int argc, char* argv[])
     }
     exit(0);
 }
-
