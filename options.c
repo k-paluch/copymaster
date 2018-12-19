@@ -67,7 +67,6 @@ struct CopymasterOptions ParseCopymasterOptions(int argc, char *argv[])
             case 'c': 
                 cpm_options.create = 1;
                 sscanf(optarg, "%o", &cpm_options.create_mode);
-	       	create();
 		break;
             case 'o': 
                 cpm_options.overwrite = 1;
@@ -161,15 +160,4 @@ struct CopymasterOptions ParseCopymasterOptions(int argc, char *argv[])
     return cpm_options;
 }
 
-int fast (){
-	
-}
 
-int slow(){
-
-}
-
-int create(){
-	int fd = open(argv[2],O_CREAT,0666);
-	return cpm_optios.create;
-}
