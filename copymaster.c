@@ -287,7 +287,7 @@ if (cpm_options.truncate) {
 		if(dir_var){
 		    printf("Directory exists and it is opened\n");
 		    while( ( dir_struct = readdir(dir_var) ) != NULL){
-		        if(strcmp(dir_struct->d_name, ".") && strcmp(dir_struct->d_name, "..")){
+		        if(strcmp(dir_struct->d_name, ".")!=0 && strcmp(dir_struct->d_name, "..")!=0){
 		            char filePath[100];
 		            strcat(filePath, cpm_options.infile);
 		            strcat(filePath, "/");
