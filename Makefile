@@ -15,10 +15,10 @@ OBJ = $(patsubst %,$(OBJDIR)/%,$(_OBJ))
 
 $(OBJDIR)/%.o: %.c $(DEPS)
 	mkdir -p $(OBJDIR)
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS) -lm
 
 $(EXECUTABLE): $(OBJ)
-	$(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS) -lm
 
 all: $(EXECUTABLE)
 
