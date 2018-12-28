@@ -10,6 +10,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <time.h>
+#include <math.h>
 #include "options.h"
 
 void parse_opt_to_change(struct CopymasterOptions cpm_options, int give_options[])
@@ -497,18 +498,18 @@ if (cpm_options.truncate) {
 	int k = 0, per = 0;
 
 	for(unsigned int i=0; i<kUMASK_OPTIONS_MAX_SZ; ++i) {
-        if (cpm_options->umask_options[i][0] == 0) {
+        if (cpm_options.umask_options[i][0] == 0) {
             break;
         }
 		
-		if (cpm_options->umask_options[i][1] == '-'){
-			switch(cpm_options->umask_options[i][0]){
+		if (cpm_options.umask_options[i][1] == '-'){
+			switch(cpm_options.umask_options[i][0]){
 				case 'u': k=0; break;
 				case 'g': k=1; break;
 				case 'o': k=2; break;
 			}
 
-			switch(cpm_options->umask_options[i][2]){
+			switch(cpm_options.umask_options[i][2]){
 				case 'r': per=0; break;
 				case 'w': per=1; break;
 				case 'x': per=2; break;
@@ -520,41 +521,4 @@ if (cpm_options.truncate) {
 	umask(mask);
 	}
 	
-	if(cpm_options.inode){
-		if((infile = open(cpm_options.infile, O_RDONLY)) == -1){
-        	FatalError('d', "infile", 21);
-    	}
-	if( (outfile = open(cpm_options.outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644) ) == -1){ 
-        	FatalError('d', "infile", 21);
-    	}
-		unsigned int inode;
-
-	struct stat file_stat;
-
-	int ret;
-	ret = fstat(infile, &file_stat);
-	
-	if(ret < 0){
-		//error getting file stat;
-	}
-	
-	if(!S_ISREG(file_stat.st_mode)){
-		fprintf(stderr,"-i:%d\n",errno);
-		fprintf(stderr,"-i:%s\n",strerror(errno));
-		fprintf(stderr,"-i: ZLY TYP VSTUPNEHO SUBORU\n");
-		return 27;	
-	
-	}
-	inode = file_stat.st_ino;
-	
-	if (inode == number){
-		return 0;
-	}
-	else {
-		fprintf(stderr,"-i:%d\n",errno);
-		fprintf(stderr,"-i:%s\n",strerror(errno));
-		fprintf(stderr,"-i: ZLY INODE\n");		
-		return 27;
-	}
-	}
 }
