@@ -12,16 +12,160 @@
 #include <time.h>
 #include "options.h"
 
-void parse_opt_to_change(struct CopymasterOptions cpm_options, int give_options[]);
-void check_options(int options_amount, int opt_to_change[], int runable_options[]);
-void ban_options(int options_amount, int opt_to_change[], int runable_options[]);
-void parse_opt_to_change(struct CopymasterOptions cpm_options, int give_options[]);
+void parse_opt_to_change(struct CopymasterOptions cpm_options, int give_options[])
+{
+    give_options[0] = cpm_options.fast ? 1 : 0;
+    give_options[1] = cpm_options.slow ? 1 : 0;
+    give_options[2] = cpm_options.create ? 1 : 0;
+    give_options[3] = cpm_options.overwrite ? 1 : 0;
+    give_options[4] = cpm_options.append ? 1 : 0;
+    give_options[5] = cpm_options.lseek ? 1 : 0;
+    give_options[6] = cpm_options.directory ? 1 : 0;
+    give_options[7] = cpm_options.delete_opt ? 1 : 0;
+    give_options[8] = cpm_options.chmod ? 1 : 0;
+    give_options[9] = cpm_options.inode ? 1 : 0;
+    give_options[10] = cpm_options.umask ? 1 : 0;
+    give_options[11] = cpm_options.link ? 1 : 0;
+    give_options[12] = cpm_options.truncate ? 1 : 0;
+    give_options[13] = cpm_options.sparse ? 1 : 0;
+}
+
+void ban_one_option(int number, int runable_options[])
+{
+int ban_fast[]       = {1, 6, 11};
+int ban_slow[]       = {0, 6, 11};
+int ban_create[]     = {3, 11};
+int ban_overwrite[]  = {5, 8, 10, 11};
+int ban_append[]     = {2, 3, 5, 10, 11};
+int ban_lseek[]      = {6, 8, 10, 11, 13};
+int ban_directory[]  = {0, 1, 5, 7, 11};
+int ban_delete_opt[] = {6, 11, 12};
+int ban_chmod[]      = {11};
+int ban_inode[]      = {11};
+int ban_umask[]      = {3, 4, 5, 11};
+int ban_link[]       = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13};
+int ban_truncate[]   = {6, 7};
+int ban_sparse[]     = {5, 6, 11};
+    switch (number)
+    {
+        case 0:
+            for (long unsigned int i = 0; i < sizeof(ban_fast)/sizeof(int); i++) {
+                runable_options[ban_fast[i]] = 0;
+            }
+            break;
+        case 1:
+            for (long unsigned int i = 0; i < sizeof(ban_slow)/sizeof(int); i++) {
+                runable_options[ban_slow[i]] = 0;
+            }
+            break;
+        case 2:
+            for (long unsigned int i = 0; i < sizeof(ban_create)/sizeof(int); i++) {
+                runable_options[ban_create[i]] = 0;
+            }
+            break;
+        case 3:
+            for (long unsigned int i = 0; i < sizeof(ban_overwrite)/sizeof(int); i++) {
+                runable_options[ban_overwrite[i]] = 0;
+            }
+            break;
+        case 4:
+            for (long unsigned int i = 0; i < sizeof(ban_append)/sizeof(int); i++) {
+                runable_options[ban_append[i]] = 0;
+            }
+            break;
+        case 5:
+            for (long unsigned int i = 0; i < sizeof(ban_lseek)/sizeof(int); i++) {
+                runable_options[ban_lseek[i]] = 0;
+            }
+            break;
+        case 6:
+            for (long unsigned int i = 0; i < sizeof(ban_directory)/sizeof(int); i++) {
+                runable_options[ban_directory[i]] = 0;
+            }
+            break;
+        case 7:
+            for (long unsigned int i = 0; i < sizeof(ban_delete_opt)/sizeof(int); i++) {
+                runable_options[ban_delete_opt[i]] = 0;
+            }
+            break;
+        case 8:
+            for (long unsigned int i = 0; i < sizeof(ban_chmod)/sizeof(int); i++) {
+                runable_options[ban_chmod[i]] = 0;
+            }
+            break;
+        case 9:
+            for (long unsigned int i = 0; i < sizeof(ban_inode)/sizeof(int); i++) {
+                runable_options[ban_inode[i]] = 0;
+            }
+            break;
+        case 10:
+            for (long unsigned int i = 0; i < sizeof(ban_umask)/sizeof(int); i++) {
+                runable_options[ban_umask[i]] = 0;
+            }
+            break;
+        case 11:
+            for (long unsigned int i = 0; i < sizeof(ban_link)/sizeof(int); i++) {
+                runable_options[ban_link[i]] = 0;
+            }
+            break;
+        case 12:
+            for (long unsigned int i = 0; i < sizeof(ban_truncate)/sizeof(int); i++) {
+                runable_options[ban_truncate[i]] = 0;
+            }
+            break;
+        case 13:
+            for (long unsigned int i = 0; i < sizeof(ban_sparse)/sizeof(int); i++) {
+                runable_options[ban_sparse[i]] = 0;
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+void ban_options(int options_amount, int opt_to_change[], int runable_options[])
+{
+    for (int i = 0; i < options_amount; i++)
+    {
+        if (opt_to_change[i] == 1)
+        {
+            ban_one_option(i, runable_options);
+        }
+    }
+}
+
+void check_options(int options_amount, int opt_to_change[], int runable_options[])
+{
+    for (int i = 0; i < options_amount; i++)
+    {
+        if (opt_to_change[i] == 1)
+        {
+            if (runable_options[i] == 0)
+            {
+                fprintf(stderr, "CHYBA PREPINACOV\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+}
+
+int is_regular_file(const char *path)
+{
+    struct stat path_stat;
+    stat(path, &path_stat);
+    return S_ISREG(path_stat.st_mode);
+}
 
 
 
-int is_regular_file(const char *path);
+void FatalError(char c, const char* msg, int exit_status)
+{
+    fprintf(stderr, "%c:%d\n", c, errno);
+    fprintf(stderr, "%c:%s\n", c, strerror(errno));
+    fprintf(stderr, "%c:%s\n", c, msg);
+    exit(exit_status);
+}
 
-void FatalError(char c, const char* msg, int exit_status);
 
 int main(int argc, char* argv[])
 {
@@ -169,8 +313,6 @@ if (cpm_options.truncate) {
             FatalError('t', "VSTUPNY SUBOR NEZMENENY", 31);
         }
     }
-    exit(0);
-}
     if(cpm_options.append){
         char buffer[2];
         int temp, infile, outfile;
@@ -350,157 +492,69 @@ if (cpm_options.truncate) {
 		    closedir(dir_var);
 		}
 	    }
-void parse_opt_to_change(struct CopymasterOptions cpm_options, int give_options[])
-{
-    give_options[0] = cpm_options.fast ? 1 : 0;
-    give_options[1] = cpm_options.slow ? 1 : 0;
-    give_options[2] = cpm_options.create ? 1 : 0;
-    give_options[3] = cpm_options.overwrite ? 1 : 0;
-    give_options[4] = cpm_options.append ? 1 : 0;
-    give_options[5] = cpm_options.lseek ? 1 : 0;
-    give_options[6] = cpm_options.directory ? 1 : 0;
-    give_options[7] = cpm_options.delete_opt ? 1 : 0;
-    give_options[8] = cpm_options.chmod ? 1 : 0;
-    give_options[9] = cpm_options.inode ? 1 : 0;
-    give_options[10] = cpm_options.umask ? 1 : 0;
-    give_options[11] = cpm_options.link ? 1 : 0;
-    give_options[12] = cpm_options.truncate ? 1 : 0;
-    give_options[13] = cpm_options.sparse ? 1 : 0;
-}
+	if (cpm_options.umask){
+		mode_t mask = 0;
+	int k = 0, per = 0;
 
-void ban_one_option(int number, int runable_options[])
-{
-int ban_fast[]       = {1, 6, 11};
-int ban_slow[]       = {0, 6, 11};
-int ban_create[]     = {3, 11};
-int ban_overwrite[]  = {5, 8, 10, 11};
-int ban_append[]     = {2, 3, 5, 10, 11};
-int ban_lseek[]      = {6, 8, 10, 11, 13};
-int ban_directory[]  = {0, 1, 5, 7, 11};
-int ban_delete_opt[] = {6, 11, 12};
-int ban_chmod[]      = {11};
-int ban_inode[]      = {11};
-int ban_umask[]      = {3, 4, 5, 11};
-int ban_link[]       = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13};
-int ban_truncate[]   = {6, 7};
-int ban_sparse[]     = {5, 6, 11};
-    switch (number)
-    {
-        case 0:
-            for (long unsigned int i = 0; i < sizeof(ban_fast)/sizeof(int); i++) {
-                runable_options[ban_fast[i]] = 0;
-            }
+	for(unsigned int i=0; i<kUMASK_OPTIONS_MAX_SZ; ++i) {
+        if (cpm_options->umask_options[i][0] == 0) {
             break;
-        case 1:
-            for (long unsigned int i = 0; i < sizeof(ban_slow)/sizeof(int); i++) {
-                runable_options[ban_slow[i]] = 0;
-            }
-            break;
-        case 2:
-            for (long unsigned int i = 0; i < sizeof(ban_create)/sizeof(int); i++) {
-                runable_options[ban_create[i]] = 0;
-            }
-            break;
-        case 3:
-            for (long unsigned int i = 0; i < sizeof(ban_overwrite)/sizeof(int); i++) {
-                runable_options[ban_overwrite[i]] = 0;
-            }
-            break;
-        case 4:
-            for (long unsigned int i = 0; i < sizeof(ban_append)/sizeof(int); i++) {
-                runable_options[ban_append[i]] = 0;
-            }
-            break;
-        case 5:
-            for (long unsigned int i = 0; i < sizeof(ban_lseek)/sizeof(int); i++) {
-                runable_options[ban_lseek[i]] = 0;
-            }
-            break;
-        case 6:
-            for (long unsigned int i = 0; i < sizeof(ban_directory)/sizeof(int); i++) {
-                runable_options[ban_directory[i]] = 0;
-            }
-            break;
-        case 7:
-            for (long unsigned int i = 0; i < sizeof(ban_delete_opt)/sizeof(int); i++) {
-                runable_options[ban_delete_opt[i]] = 0;
-            }
-            break;
-        case 8:
-            for (long unsigned int i = 0; i < sizeof(ban_chmod)/sizeof(int); i++) {
-                runable_options[ban_chmod[i]] = 0;
-            }
-            break;
-        case 9:
-            for (long unsigned int i = 0; i < sizeof(ban_inode)/sizeof(int); i++) {
-                runable_options[ban_inode[i]] = 0;
-            }
-            break;
-        case 10:
-            for (long unsigned int i = 0; i < sizeof(ban_umask)/sizeof(int); i++) {
-                runable_options[ban_umask[i]] = 0;
-            }
-            break;
-        case 11:
-            for (long unsigned int i = 0; i < sizeof(ban_link)/sizeof(int); i++) {
-                runable_options[ban_link[i]] = 0;
-            }
-            break;
-        case 12:
-            for (long unsigned int i = 0; i < sizeof(ban_truncate)/sizeof(int); i++) {
-                runable_options[ban_truncate[i]] = 0;
-            }
-            break;
-        case 13:
-            for (long unsigned int i = 0; i < sizeof(ban_sparse)/sizeof(int); i++) {
-                runable_options[ban_sparse[i]] = 0;
-            }
-            break;
-        default:
-            break;
-    }
-}
-
-void ban_options(int options_amount, int opt_to_change[], int runable_options[])
-{
-    for (int i = 0; i < options_amount; i++)
-    {
-        if (opt_to_change[i] == 1)
-        {
-            ban_one_option(i, runable_options);
         }
+		
+		if (cpm_options->umask_options[i][1] == '-'){
+			switch(cpm_options->umask_options[i][0]){
+				case 'u': k=0; break;
+				case 'g': k=1; break;
+				case 'o': k=2; break;
+			}
+
+			switch(cpm_options->umask_options[i][2]){
+				case 'r': per=0; break;
+				case 'w': per=1; break;
+				case 'x': per=2; break;
+			}
+		}
+
+		mask += pow(2, 8 - (k * 3 + per));
     }
+	umask(mask);
+	}
+	
+	if(cpm_options.inode){
+		if((infile = open(cpm_options.infile, O_RDONLY)) == -1){
+        	FatalError('d', "infile", 21);
+    	}
+	if( (outfile = open(cpm_options.outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644) ) == -1){ 
+        	FatalError('d', "infile", 21);
+    	}
+		unsigned int inode;
+
+	struct stat file_stat;
+
+	int ret;
+	ret = fstat(infile, &file_stat);
+	
+	if(ret < 0){
+		//error getting file stat;
+	}
+	
+	if(!S_ISREG(file_stat.st_mode)){
+		fprintf(stderr,"-i:%d\n",errno);
+		fprintf(stderr,"-i:%s\n",strerror(errno));
+		fprintf(stderr,"-i: ZLY TYP VSTUPNEHO SUBORU\n");
+		return 27;	
+	
+	}
+	inode = file_stat.st_ino;
+	
+	if (inode == number){
+		return 0;
+	}
+	else {
+		fprintf(stderr,"-i:%d\n",errno);
+		fprintf(stderr,"-i:%s\n",strerror(errno));
+		fprintf(stderr,"-i: ZLY INODE\n");		
+		return 27;
+	}
+	}
 }
-
-void check_options(int options_amount, int opt_to_change[], int runable_options[])
-{
-    for (int i = 0; i < options_amount; i++)
-    {
-        if (opt_to_change[i] == 1)
-        {
-            if (runable_options[i] == 0)
-            {
-                fprintf(stderr, "CHYBA PREPINACOV\n");
-                exit(EXIT_FAILURE);
-            }
-        }
-    }
-}
-
-int is_regular_file(const char *path)
-{
-    struct stat path_stat;
-    stat(path, &path_stat);
-    return S_ISREG(path_stat.st_mode);
-}
-
-
-
-void FatalError(char c, const char* msg, int exit_status)
-{
-    fprintf(stderr, "%c:%d\n", c, errno);
-    fprintf(stderr, "%c:%s\n", c, strerror(errno));
-    fprintf(stderr, "%c:%s\n", c, msg);
-    exit(exit_status);
-}
-
