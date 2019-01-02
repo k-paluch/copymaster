@@ -35,7 +35,8 @@ void FatalError(char c, const char* msg, int exit_status)
 
 int main(int argc, char* argv[])
 {
-    struct CopymasterOptions cpm_options = ParseCopymasterOptions(argc, argv);
+	struct CopymasterOptions cpm_options = ParseCopymasterOptions(argc, argv);
+	//KONTROLA PREPINACOV
 	if(cpm_options.directory && (cpm_options.lseek + cpm_options.delete_opt + cpm_options.link + cpm_options.truncate)){
 		fprintf(stderr, "CHYBA PREPINACOV\n");
 		exit(EXIT_FAILURE);
@@ -80,9 +81,11 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "CHYBA PREPINACOV\n");
 		exit(EXIT_FAILURE);
 	}
+	//KONTROLA PARAMETROV
     if(argc == 3){
 	long sizeofbuffer;
-    	int infile, outfile, temp;
+    int infile, outfile, temp;
+	//INFILE,OURFILE CHECK
 	if((infile = open(cpm_options.infile, O_RDONLY)) == -1){
         	FatalError('?', "infile", 21);
     	}
@@ -100,7 +103,7 @@ int main(int argc, char* argv[])
     }
 
     
-
+	//SLOW
     if(cpm_options.slow)
     {
         char buffer[2];
@@ -117,6 +120,7 @@ int main(int argc, char* argv[])
     	close(infile);
     	close(outfile);
     }
+	//FAST
 	if(cpm_options.fast){
 	long sizeofbuffer;
     	int infile, outfile, temp;
@@ -135,7 +139,7 @@ int main(int argc, char* argv[])
     	close(infile);
     	close(outfile);
     }
-
+	//LINK
     if(cpm_options.link){
 	    int infile,outfile;
 	    if((infile = open(cpm_options.infile,O_RDONLY)) ==-1){
@@ -148,6 +152,7 @@ int main(int argc, char* argv[])
 	    close(infile);
 	    close(outfile);
     }
+	//LSEEK
 if(cpm_options.lseek){
         int infile, outfile;
 	if((infile = open(cpm_options.infile, O_RDONLY)) == -1)
@@ -155,13 +160,13 @@ if(cpm_options.lseek){
         	FatalError('l', "infile", 21);
     	}
         if ( (outfile = open(cpm_options.outfile, O_WRONLY) ) ==-1 ){
-			FatalError('l',"outfile",24);
+			FatalError('l',"SUBOR NEEXISTUJE",24);
         }
         if(lseek(infile, cpm_options.lseek_options.pos1, SEEK_SET) < 0){
-			FatalError('l',"infile",33);
+			FatalError('l',"CHYBA POZICIE infile",33);
         }
         if(lseek(outfile, cpm_options.lseek_options.pos2, cpm_options.lseek_options.x) < 0){
-			FatalError('l',"outfile",33);
+			FatalError('l',"CHYBA POZICIE outfile",33);
         }
         char buffer[ (int) cpm_options.lseek_options.num];
         int read_bytes, written_bytes;
@@ -171,11 +176,11 @@ if(cpm_options.lseek){
             written_bytes = write(outfile, &buffer, (size_t)read_bytes);
             printf("RET_OUT: %d\n", written_bytes);
             if(read_bytes != written_bytes){
-                printf("Error:\nl:%d\nl:%s\nl:%s\n", errno, strerror(errno), "INA CHYBA");
-                return 33;
+				FatalError('l',"INA CHYBA",33);
             }
         }
     }
+	//CREATE
     if(cpm_options.create){
         char buffer[2];
         int temp, infile, outfile;
@@ -184,7 +189,7 @@ if(cpm_options.lseek){
     	}
         umask(0);
         if ((outfile = open(cpm_options.outfile, O_WRONLY | O_EXCL | O_CREAT, cpm_options.create_mode)) == -1){
-			FatalError('c',"infile",23);
+			FatalError('c',"SUBOR NEEXISTUJE",23);
         }
         while((temp = read(infile, &buffer, 1)) > 0)
         {
@@ -194,7 +199,7 @@ if(cpm_options.lseek){
         close(outfile);
     }
 
-    	
+    //TRUNCATE
 if (cpm_options.truncate) {
 	long sizeofbuffer;
     	int infile, outfile, temp;
@@ -221,6 +226,7 @@ if (cpm_options.truncate) {
             FatalError('t', "VSTUPNY SUBOR NEZMENENY", 31);
         }
     }
+	//APPEND
     if(cpm_options.append){
         char buffer[2];
         int temp, infile, outfile;
@@ -240,10 +246,7 @@ if (cpm_options.truncate) {
         close(infile);
         close(outfile);
     }
-
-
-    
-
+	//OVERWRITE
     
 	if(cpm_options.overwrite){
         	char buffer[2];
@@ -254,7 +257,7 @@ if (cpm_options.truncate) {
     		}
         	if ((outfile = open(cpm_options.outfile, O_WRONLY|O_TRUNC))==-1)
         	{
-				FatalError('o',"outfile",24);
+				FatalError('o',"SUBOR NEEXISTUJE",24);
         	}
         	while( (temp = read(infile, &buffer, 1)) > 0 )
         	{	
@@ -263,6 +266,7 @@ if (cpm_options.truncate) {
         	close(infile);
         	close(outfile);
     }
+	//DELETE
     if (cpm_options.delete_opt) {
 	long sizeofbuffer;
     	int infile, outfile, temp;
@@ -287,7 +291,7 @@ if (cpm_options.truncate) {
             FatalError('D', "SUBOR NEBOL ZMAZANY", 26);
         }
     }
-
+	//CHMOD
     if (cpm_options.chmod) {
 	long sizeofbuffer;
     	int infile, outfile, temp;
@@ -316,7 +320,7 @@ if (cpm_options.truncate) {
         }
     }
 
-    
+    //DIRECTORY
 	if (cpm_options.directory) {
 		DIR *dir_var;
 		struct dirent *dir_struct;
@@ -324,7 +328,7 @@ if (cpm_options.truncate) {
 		char *file_type;
 		char buffer[200];
 		if(stat(cpm_options.infile, &stat_struct_check_dir) < 0){
-		    perror("stat()"); // no such file o directory
+		    perror("stat()"); 
 		}
 		if (S_ISDIR(stat_struct_check_dir.st_mode)){
 		    file_type = "directory";
@@ -336,6 +340,7 @@ if (cpm_options.truncate) {
 		if(dir_var){
 		    printf("Dir existuje a je otvoreny\n");
 		    while( ( dir_struct = readdir(dir_var) ) != NULL){
+				//get rid of "." and ".."
 		        if(strcmp(dir_struct->d_name, ".")!=0 && strcmp(dir_struct->d_name, "..")!=0){
 		            char filePath[100];
 		            strcat(filePath, cpm_options.infile);
@@ -343,7 +348,7 @@ if (cpm_options.truncate) {
 		            strcat(filePath, dir_struct->d_name);
 		            struct stat stat_struct_main;
 		            if(stat(filePath, &stat_struct_main) < 0){
-		                perror("stat()"); // no such file o directory
+		                perror("stat()"); 
 		            }
 		            struct passwd *pw_uid = getpwuid(stat_struct_main.st_uid);
 		            struct group  *gr_gid = getgrgid(stat_struct_main.st_gid);
@@ -399,6 +404,7 @@ if (cpm_options.truncate) {
 		    closedir(dir_var);
 		}
 	    }
+		//umask
 	if (cpm_options.umask){
 		mode_t mask = 0;
 	int k = 0, per = 0;
